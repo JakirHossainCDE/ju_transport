@@ -131,12 +131,12 @@
   
 
   
-<!-- Add Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+<!-- ✅ Add Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+  import { getDatabase, ref, set, onValue, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 
-<script>
-  // ✅ 1. Firebase Configuration (Update with your credentials)
+  // ✅ 1. Firebase Configuration (UPDATE WITH YOUR CREDENTIALS)
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_AUTH_DOMAIN",
@@ -148,25 +148,43 @@
   };
 
   // ✅ 2. Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-  // ✅ 3. Store Navigator Location in Firebase
-  let userMarker = {}; // Store markers for each navigator
+  // ✅ 3. Define Global Variables
+  let userMarkers = {};  // Store markers for each navigator
+  let currentUserRef = null; // Store current user's reference for cleanup
+  let map; // Map instance
 
+  // ✅ 4. Initialize the Map (Ensure the div #map exists in HTML)
+  function initializeMap() {
+    map = L.map('map').setView([23.820375, 90.371812], 11);  // Centered on Dhaka
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+  }
+  initializeMap();
+
+  // ✅ 5. Function to Start Tracking and Updating Firebase
   function startTracking(name, phone, email, route) {
     if (!name || !phone || !email || route === "") {
-      alert("Please fill out all fields!");
+      alert("❌ Please fill out all fields!");
       return;
     }
 
-    const userRef = db.ref("navigators/" + name);
+    // Create Firebase Reference
+    currentUserRef = ref(db, "navigators/" + name);
+
+    // Ensure location data is removed when navigator goes offline
+    onDisconnect(currentUserRef).remove();
 
     if (navigator.geolocation) {
       navigator.geolocation.watchPosition(
         position => {
           const { latitude, longitude } = position.coords;
-          userRef.set({
+
+          // ✅ Update location in Firebase
+          set(currentUserRef, {
             name,
             phone,
             email,
@@ -175,46 +193,53 @@
             longitude,
             timestamp: Date.now()
           });
+
         },
         error => {
           console.error("Location error: ", error);
-          alert("Please enable location services.");
+          alert("❌ Please enable location services in your browser settings.");
         },
         { enableHighAccuracy: true }
       );
     } else {
-      alert("Geolocation is not supported by this browser.");
+      alert("❌ Geolocation is not supported by this browser.");
     }
   }
 
-  // ✅ 4. Listen for Navigator Location Updates & Show on Map
-  db.ref("navigators").on("value", snapshot => {
+  // ✅ 6. Listen for Location Updates in Firebase & Show on Map
+  onValue(ref(db, "navigators"), snapshot => {
     snapshot.forEach(childSnapshot => {
       const user = childSnapshot.val();
       const { latitude, longitude, name } = user;
 
-      if (!userMarker[name]) {
-        userMarker[name] = L.marker([latitude, longitude], { icon: greenBusIcon })
-          .addTo(map)
-          .bindPopup(`<strong>${name}</strong><br>Phone: ${user.phone}<br>Route: ${routes[user.route].name}`);
+      // If marker already exists, update position
+      if (userMarkers[name]) {
+        userMarkers[name].setLatLng([latitude, longitude]).update();
       } else {
-        userMarker[name].setLatLng([latitude, longitude]).update();
+        // ✅ Create a new marker
+        userMarkers[name] = L.marker([latitude, longitude])
+          .addTo(map)
+          .bindPopup(`<strong>${name}</strong><br>Phone: ${user.phone}<br>Route: ${user.route}`);
+
+        // ✅ Auto-center map on the latest added navigator
+        map.setView([latitude, longitude], 12);
       }
     });
   });
 
-  // ✅ 5. Connect Start Tracking to Login Button
-  function loginDriver() {
+  // ✅ 7. Connect Start Tracking to Login Button
+  window.loginDriver = function () {
     const name = document.getElementById("driver-name").value.trim();
     const phone = document.getElementById("driver-phone").value.trim();
     const email = document.getElementById("driver-email").value.trim();
     const routeIndex = document.getElementById("route-select").value;
 
-    document.getElementById("login-status").textContent = `Logged in as ${name}. Tracking started.`;
+    document.getElementById("login-status").textContent = `✅ Logged in as ${name}. Tracking started.`;
 
     startTracking(name, phone, email, routeIndex);
-  }
+  };
 </script>
+
 
 
   
