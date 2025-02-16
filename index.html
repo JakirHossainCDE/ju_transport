@@ -130,60 +130,98 @@
 
   
 
+  
+<!-- Add Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+
 <script>
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  databaseURL: "https://your-database-url.firebaseio.com/",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
+  // ✅ 1. Firebase Configuration (Update with your credentials)
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "https://your-database-url.firebaseio.com/",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+  // ✅ 2. Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-// Function to start tracking navigator's location
-function startTracking(name, phone, email, route) {
-  if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(position => {
-      const { latitude, longitude } = position.coords;
+  // ✅ 3. Store Navigator Location in Firebase
+  let userMarker = {}; // Store markers for each navigator
 
-      // Store location in Firebase
-      db.ref("navigators/" + name).set({
-        name, phone, email, route, latitude, longitude, timestamp: Date.now()
-      });
-    });
-  }
-}
-
-// Function to listen for navigator updates
-db.ref("navigators").on("value", snapshot => {
-  snapshot.forEach(childSnapshot => {
-    const user = childSnapshot.val();
-    
-    if (!window.userMarkers) window.userMarkers = {};
-
-    // If marker exists, update it; otherwise, create a new one
-    if (window.userMarkers[user.name]) {
-      window.userMarkers[user.name].setLatLng([user.latitude, user.longitude]).update();
-    } else {
-      window.userMarkers[user.name] = L.marker([user.latitude, user.longitude], { icon: greenBusIcon })
-        .addTo(map)
-        .bindPopup(`<strong>${user.name}</strong><br>Phone: ${user.phone}<br>Route: ${routes[user.route].name}`);
+  function startTracking(name, phone, email, route) {
+    if (!name || !phone || !email || route === "") {
+      alert("Please fill out all fields!");
+      return;
     }
-  });
-});
 
+    const userRef = db.ref("navigators/" + name);
+
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(
+        position => {
+          const { latitude, longitude } = position.coords;
+          userRef.set({
+            name,
+            phone,
+            email,
+            route,
+            latitude,
+            longitude,
+            timestamp: Date.now()
+          });
+        },
+        error => {
+          console.error("Location error: ", error);
+          alert("Please enable location services.");
+        },
+        { enableHighAccuracy: true }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  }
+
+  // ✅ 4. Listen for Navigator Location Updates & Show on Map
+  db.ref("navigators").on("value", snapshot => {
+    snapshot.forEach(childSnapshot => {
+      const user = childSnapshot.val();
+      const { latitude, longitude, name } = user;
+
+      if (!userMarker[name]) {
+        userMarker[name] = L.marker([latitude, longitude], { icon: greenBusIcon })
+          .addTo(map)
+          .bindPopup(`<strong>${name}</strong><br>Phone: ${user.phone}<br>Route: ${routes[user.route].name}`);
+      } else {
+        userMarker[name].setLatLng([latitude, longitude]).update();
+      }
+    });
+  });
+
+  // ✅ 5. Connect Start Tracking to Login Button
+  function loginDriver() {
+    const name = document.getElementById("driver-name").value.trim();
+    const phone = document.getElementById("driver-phone").value.trim();
+    const email = document.getElementById("driver-email").value.trim();
+    const routeIndex = document.getElementById("route-select").value;
+
+    document.getElementById("login-status").textContent = `Logged in as ${name}. Tracking started.`;
+
+    startTracking(name, phone, email, routeIndex);
+  }
 </script>
 
 
   
 
 
+
+  
 
   <script>
 
