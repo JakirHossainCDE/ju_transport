@@ -157,7 +157,7 @@
   let userLocationWatcher = null; // Stores geolocation watcher
   let map; // Global map instance
 
-  // ✅ 4. Initialize the Map (Ensure the div #map exists in HTML)
+  // ✅ 4. Initialize the Map
   function initializeMap() {
     map = L.map('map').setView([23.820375, 90.371812], 11);  // Centered on Dhaka
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -206,7 +206,7 @@
     }
   }
 
-  // ✅ 6. Listen for Navigator Location Updates & Show on Map
+  // ✅ 6. Display Navigator Locations for ALL Users
   onValue(ref(db, "navigators"), snapshot => {
     snapshot.forEach(childSnapshot => {
       const user = childSnapshot.val();
