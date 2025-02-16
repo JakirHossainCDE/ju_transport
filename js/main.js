@@ -25,6 +25,15 @@
     L.control.layers(baseMaps).addTo(map);
 
 
+ {
+  "rules": {
+    "navigators": {
+      ".read": true,
+      ".write": true
+    }
+  }
+};
+
 // // Toggle the visibility of the login form
 //   function toggleLoginForm() {
 //     const formContainer = document.getElementById("login-form-container");
@@ -247,4 +256,5 @@
 //           highlightRoute(event.target.value);
 //         });
 //       });
- 
+
+
