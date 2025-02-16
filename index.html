@@ -130,11 +130,11 @@
 
   
 
-  
-<!-- ✅ Add Firebase SDK -->
+<!-- ✅ Firebase SDK -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-  import { getDatabase, ref, set, onValue, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+  // ✅ Import Firebase Services
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, set, onValue, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   // ✅ 1. Firebase Configuration (UPDATE WITH YOUR CREDENTIALS)
   const firebaseConfig = {
@@ -151,10 +151,11 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // ✅ 3. Define Global Variables
-  let userMarkers = {};  // Store markers for each navigator
-  let currentUserRef = null; // Store current user's reference for cleanup
-  let map; // Map instance
+  // ✅ 3. Global Variables
+  let userMarkers = {};  // Stores markers for each navigator
+  let currentUserRef = null; // Stores current user's Firebase reference
+  let userLocationWatcher = null; // Stores geolocation watcher
+  let map; // Global map instance
 
   // ✅ 4. Initialize the Map (Ensure the div #map exists in HTML)
   function initializeMap() {
@@ -165,21 +166,21 @@
   }
   initializeMap();
 
-  // ✅ 5. Function to Start Tracking and Updating Firebase
+  // ✅ 5. Function to Start Tracking & Updating Firebase
   function startTracking(name, phone, email, route) {
     if (!name || !phone || !email || route === "") {
       alert("❌ Please fill out all fields!");
       return;
     }
 
-    // Create Firebase Reference
+    // Create Firebase Reference for User
     currentUserRef = ref(db, "navigators/" + name);
 
-    // Ensure location data is removed when navigator goes offline
+    // ✅ Remove navigator from Firebase when they disconnect
     onDisconnect(currentUserRef).remove();
 
     if (navigator.geolocation) {
-      navigator.geolocation.watchPosition(
+      userLocationWatcher = navigator.geolocation.watchPosition(
         position => {
           const { latitude, longitude } = position.coords;
 
@@ -193,11 +194,10 @@
             longitude,
             timestamp: Date.now()
           });
-
         },
         error => {
-          console.error("Location error: ", error);
-          alert("❌ Please enable location services in your browser settings.");
+          console.error("❌ GPS Error:", error);
+          alert("❌ Please enable GPS and allow location access.");
         },
         { enableHighAccuracy: true }
       );
@@ -206,17 +206,17 @@
     }
   }
 
-  // ✅ 6. Listen for Location Updates in Firebase & Show on Map
+  // ✅ 6. Listen for Navigator Location Updates & Show on Map
   onValue(ref(db, "navigators"), snapshot => {
     snapshot.forEach(childSnapshot => {
       const user = childSnapshot.val();
       const { latitude, longitude, name } = user;
 
-      // If marker already exists, update position
+      // ✅ Update existing marker instead of creating duplicates
       if (userMarkers[name]) {
         userMarkers[name].setLatLng([latitude, longitude]).update();
       } else {
-        // ✅ Create a new marker
+        // ✅ Create a new marker for new user
         userMarkers[name] = L.marker([latitude, longitude])
           .addTo(map)
           .bindPopup(`<strong>${name}</strong><br>Phone: ${user.phone}<br>Route: ${user.route}`);
@@ -238,7 +238,9 @@
 
     startTracking(name, phone, email, routeIndex);
   };
+
 </script>
+
 
 
 
