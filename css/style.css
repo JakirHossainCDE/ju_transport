@@ -1,0 +1,136 @@
+body {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.appbar {
+    background-color: blue;
+    height: 6vh;
+}
+
+.appbar h3{
+    padding: 6px;
+    margin: 0 !important;
+    color: #ffffff !important;
+}
+
+
+
+  #map {
+    height: 94vh;
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+}
+  
+  
+.floating-panel {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.7); /* Increased transparency */
+  padding: 8px; /* Increased padding for a spacious feel */
+  border-radius: 15px; /* Smooth, rounded corners */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Softer shadow */
+  font-family: Arial, sans-serif;
+  font-size: 15px; /* Slightly larger text for readability */
+  color: #333; /* Dark text for contrast */
+  z-index: 1000;
+  backdrop-filter: blur(2px); /* Adds a subtle glass-like blur effect */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Light border for definition */
+}
+
+	
+
+  
+  
+  .login-panel {
+    bottom: 14px;
+    left: 1px;
+    width: 165px;
+  }
+  
+  
+  .info-panel {
+    bottom: 14px;
+    right: 1px;
+    width: 110px;
+  }
+  .route-panel {
+    bottom: 5px;
+    right: 5px;
+    width: 50px;
+  }
+  
+
+  
+  
+  
+  h3, h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #333;
+  }
+  label, input, select {
+    display: block;
+    margin: 5px 0;
+    font-size: 13px;
+    width: 100%;
+  }
+  button {
+    margin-top: 2px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 6px;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+  }
+  button:hover {
+    background: #45a049;
+  }
+  p {
+    font-size: 12px;
+    color: #555;
+    margin: 5px 0 0;
+  }
+  
+  body {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.appbar {
+    background-color: blue;
+    height: 6vh;
+}
+
+.appbar h3{
+    padding: 6px;
+    margin: 0 !important;
+    color: #ffffff !important;
+}
+
+
+<style>
+  .environmental-panel {
+    position: fixed; /* Change to fixed for proper positioning */
+    top: 40px; /* Position from the top */
+    right: 5px; /* Position from the right */
+    background: linear-gradient(45deg, rgba(255, 105, 180, 0.7), rgba(0, 188, 212, 0.7)); /* Colorful gradient with transparency */
+    padding: 5px;
+    border-radius: 2px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  .environmental-panel h5 {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: #ffffff; /* White text for better contrast */
+  }
+</style>
+  
+
