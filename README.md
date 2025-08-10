@@ -1,7 +1,7 @@
 # Jahangirnagar University (JU) Bus Tracking System
 
-![JU Bus Tracking System Screenshot](https://via.placeholder.com/800x400?text=JU+Bus+Tracking+System) 
-*(Replace with actual screenshot)*
+
+<img width="1362" height="679" alt="image" src="https://github.com/user-attachments/assets/5b1f5c61-887e-4f52-ac32-16a55794ad03" />
 
 A real-time web application for tracking Jahangirnagar University student bus services with interactive maps, route information, and environmental data.
 
