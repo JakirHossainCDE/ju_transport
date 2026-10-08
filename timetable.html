@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#174d40" />
+    <title>Reference Timetable | JU Transport</title>
+    <meta
+      name="description"
+      content="Readable reference timetable for seven Jahangirnagar University transport routes. Confirm current departures with the university."
+    />
+    <link rel="icon" href="assets/icon.svg" />
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .text-timetable {
+        padding-block: 40px;
+      }
+      .text-timetable h1 {
+        margin: 25px 0 15px;
+        font-size: 32px;
+      }
+      .text-timetable > p {
+        margin-bottom: 25px;
+        color: var(--muted);
+      }
+      .text-timetable .notice {
+        margin-block: 20px;
+      }
+      .text-timetable .table-scroll {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+      @media (max-width: 680px) {
+        .text-timetable .table-scroll table {
+          min-width: 590px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell text-timetable">
+      <a class="text-button" href="./">← JU Transport route explorer</a>
+      <h1>JU Transport reference timetable</h1>
+      <p>Dhaka ↔ Jahangirnagar University · All times in Dhaka time (UTC+6).</p>
+      <div class="notice">
+        <p>
+          Reference times from the original December 2025 project. Operating
+          days, holidays and current departures are unverified. Confirm with the
+          JU Transport Office before travelling.
+        </p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <caption class="sr-only">
+            Reference bus departures to and from JU Campus
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Route</th>
+              <th scope="col">Dhaka departure point</th>
+              <th scope="col">To JU Campus</th>
+              <th scope="col">From JU Campus</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>
+                <strong>Airport</strong><small lang="bn">বিমানবন্দর</small>
+              </td>
+              <td>7:00 AM</td>
+              <td>3:30 PM</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                <strong>Mirpur 12</strong><small lang="bn">মিরপুর ১২</small>
+              </td>
+              <td>7:30 AM</td>
+              <td>3:30 PM</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                <strong>Manik Mia Avenue</strong
+                ><small lang="bn">মানিক মিয়া অ্যাভিনিউ</small>
+              </td>
+              <td>7:30 AM</td>
+              <td>3:30 PM</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><strong>Khilgaon</strong><small lang="bn">খিলগাঁও</small></td>
+              <td>7:00 AM</td>
+              <td>3:30 PM · 5:00 PM</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>
+                <strong>Khilkhet</strong><small lang="bn">খিলক্ষেত</small>
+              </td>
+              <td>7:15 AM</td>
+              <td>5:00 PM</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>
+                <strong>Mirpur 14</strong><small lang="bn">মিরপুর ১৪</small>
+              </td>
+              <td>7:15 AM</td>
+              <td>5:00 PM</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>
+                <strong>Bangabazar</strong><small lang="bn">বঙ্গবাজার</small>
+              </td>
+              <td>7:15 AM · 5:00 PM · 6:00 PM · 7:30 PM · 8:30 PM</td>
+              <td>3:00 PM · 5:00 PM · 8:00 PM</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="data-caption">
+        <a
+          href="https://www.juniv.edu/office/transport-office/program/bus-schedule"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Official university timetable ↗</a
+        >
+      </p>
+      <p class="data-caption">
+        Independent student project by Md. Jakir Hossain. This page works
+        without JavaScript.
+      </p>
+    </main>
+  </body>
+</html>

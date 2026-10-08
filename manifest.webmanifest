@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "JU Transport — Route & Timetable Guide",
+  "short_name": "JU Transport",
+  "description": "Seven Jahangirnagar University bus routes and a reference timetable.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f2",
+  "theme_color": "#174d40",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
