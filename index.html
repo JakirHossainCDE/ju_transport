@@ -283,6 +283,43 @@
             </p>
           </aside>
           <div class="map-column">
+            <section class="live-panel" aria-labelledby="live-title">
+              <div class="live-heading">
+                <div>
+                  <p class="eyebrow">FOLLOW YOUR JOURNEY</p>
+                  <h2 id="live-title">
+                    Live bus locations
+                    <span id="live-count" class="live-count">0</span>
+                  </h2>
+                </div>
+                <button type="button" class="button primary" id="open-tracking">
+                  <svg class="icon"><use href="#locate" /></svg>Share bus
+                  location
+                </button>
+              </div>
+              <div class="live-tools">
+                <p id="live-connection" role="status">
+                  Connecting to live locations…
+                </p>
+                <label class="live-all"
+                  ><input type="checkbox" id="live-all-routes" /> All routes
+                  &amp; directions</label
+                >
+              </div>
+              <p id="live-empty" class="live-empty">
+                Checking for buses sharing their location…
+              </p>
+              <ul
+                id="live-bus-list"
+                class="live-bus-list"
+                aria-label="Buses sharing their location"
+              ></ul>
+              <p class="live-footnote">
+                GPS updates about every 10–12 seconds. Community reports are
+                unverified. Positions disappear after 2 minutes without an
+                update.
+              </p>
+            </section>
             <section class="map-card" aria-label="Interactive route map">
               <div class="map-top">
                 <div>
@@ -329,7 +366,7 @@
                 </div>
                 <span class="map-label"
                   ><svg class="icon"><use href="#map-icon" /></svg>Indicative
-                  route · not live bus locations</span
+                  route paths · bus icons show shared GPS</span
                 >
               </div>
               <div
@@ -507,9 +544,13 @@
       ></a>
       <h3>Live tracking</h3>
       <p>
-        No live bus-location service is connected. Map markers show route
-        endpoints, not moving buses. Your own location appears only when you
-        select “Show my location”. It is not uploaded or shared.
+        Select “Share bus location” only while you are on the bus. Your current
+        GPS position, route, bus label and accuracy become public until you stop
+        sharing or the location expires. Keep this page open; locked phones may
+        pause updates. Only the latest point is displayed, with no journey
+        history. Community reports are unverified; authority badges require
+        account approval. “Show my location” remains private to your browser and
+        does not start sharing.
       </p>
       <h3>Weather & saved routes</h3>
       <p>
@@ -545,6 +586,139 @@
         Copy link
       </button>
       <p id="copy-status" role="status"></p>
+    </dialog>
+    <div id="sharing-strip" class="sharing-strip" hidden>
+      <div>
+        <strong>Bus location sharing is on</strong>
+        <p id="sharing-strip-status">Waiting for GPS…</p>
+      </div>
+      <button type="button" class="button secondary" id="manage-sharing">
+        Manage
+      </button>
+      <button type="button" class="button stop-button" id="quick-stop-sharing">
+        Stop sharing
+      </button>
+    </div>
+    <dialog id="tracking-dialog" aria-labelledby="tracking-title">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">SHARE FROM THE BUS</p>
+          <h2 id="tracking-title">Help students find their bus.</h2>
+        </div>
+        <button
+          type="button"
+          class="icon-button"
+          id="close-tracking"
+          aria-label="Close location sharing dialog"
+        >
+          <svg class="icon"><use href="#close" /></svg>
+        </button>
+      </div>
+      <p>
+        Use a phone on board the bus. Select its route and direction, then allow
+        GPS access. Students can follow it without signing in.
+      </p>
+      <p id="tracking-unavailable" class="tracking-notice" hidden>
+        The live-location service is not connected yet. You can still explore
+        the routes and timetable.
+      </p>
+      <div class="sharing-identity">
+        <span id="sharing-identity">Community contributor · unverified</span
+        ><button
+          id="authority-signout"
+          type="button"
+          class="text-button"
+          hidden
+        >
+          Sign out
+        </button>
+      </div>
+      <form id="tracking-form">
+        <fieldset id="tracking-fields">
+          <legend class="sr-only">Bus journey and sharing consent</legend>
+          <label for="tracking-label"
+            >Bus number or label <span>(no personal details)</span></label
+          >
+          <input
+            id="tracking-label"
+            name="bus-label"
+            maxlength="32"
+            placeholder="e.g. JU Bus 12"
+            required
+            autocomplete="off"
+          />
+          <div class="tracking-form-grid">
+            <div>
+              <label for="tracking-route">Bus route</label
+              ><select id="tracking-route" required></select>
+            </div>
+            <div>
+              <label for="tracking-direction">Direction</label
+              ><select id="tracking-direction">
+                <option value="to-campus">To JU Campus</option>
+                <option value="from-campus">From JU Campus</option>
+              </select>
+            </div>
+          </div>
+          <label class="consent-label"
+            ><input id="tracking-consent" type="checkbox" required /><span
+              >I am on this bus and agree to share this phone’s current location
+              publicly. I will stop sharing when I leave.</span
+            ></label
+          >
+        </fieldset>
+        <div class="tracking-actions">
+          <button id="start-sharing" type="submit" class="button primary">
+            Start sharing live location</button
+          ><button
+            id="stop-sharing"
+            type="button"
+            class="button stop-button"
+            hidden
+          >
+            Stop sharing
+          </button>
+        </div>
+      </form>
+      <p id="sharing-status" class="sharing-status" role="status">
+        Location sharing is off.
+      </p>
+      <p class="tracking-notice">
+        Keep this page open and your phone awake. GPS may pause when you lock it
+        or change apps. Sharing ends automatically after 4 hours. Stop before
+        leaving the bus.
+      </p>
+      <details id="authority-details" class="authority-details">
+        <summary>Transport authority sign-in</summary>
+        <p>
+          Approved accounts receive a “Verified authority” badge. Contact the
+          project owner for access.
+        </p>
+        <form id="authority-form">
+          <label for="authority-email">Email</label
+          ><input
+            id="authority-email"
+            type="email"
+            autocomplete="username"
+            required
+          />
+          <label for="authority-password">Password</label
+          ><input
+            id="authority-password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <button id="authority-login" type="submit" class="button secondary">
+            Sign in
+          </button>
+        </form>
+        <p id="authority-status" role="status"></p>
+      </details>
+      <div id="tracking-captcha" hidden>
+        <p>Complete this check before starting or signing in.</p>
+        <div id="tracking-captcha-widget"></div>
+      </div>
     </dialog>
     <div id="toast" class="toast" role="status" hidden></div>
   </body>

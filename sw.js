@@ -1,4 +1,4 @@
-const CACHE = "ju-transport-v2026-10-08-3";
+const CACHE = "ju-transport-v2026-10-08-live-1";
 const FILES = [
   "./",
   "index.html",
@@ -7,6 +7,9 @@ const FILES = [
   "js/theme.js",
   "js/main.js",
   "js/core.js",
+  "js/live-tracking.js",
+  "js/tracking-api.js",
+  "js/tracking-core.js",
   "data/routes.json",
   "vendor/leaflet/leaflet.js",
   "vendor/leaflet/leaflet.css",
@@ -40,6 +43,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin)
     return;
+  // Configuration and live positions must never be served from an offline cache.
+  if (url.pathname.endsWith("/data/tracking-config.json")) return;
   const scope = new URL(self.registration.scope).pathname;
   if (!url.pathname.startsWith(scope)) return;
   const key = new Request(url.origin + url.pathname);

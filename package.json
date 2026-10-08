@@ -1,11 +1,17 @@
 {
   "name": "ju-transport",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "type": "module",
   "description": "Jahangirnagar University route and reference timetable guide",
   "scripts": {
-    "test": "node --test tests/core.test.mjs",
-    "generate:timetable": "node scripts/generate-timetable.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "generate:timetable": "node scripts/generate-timetable.mjs",
+    "test:browser": "node tests/tracking-browser.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "axe-core": "4.14.0",
+    "playwright": "1.62.1"
   }
 }

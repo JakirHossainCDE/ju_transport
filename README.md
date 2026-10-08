@@ -11,7 +11,7 @@ A responsive route and timetable guide for Jahangirnagar University, built by **
 - Directions to and from campus, complete departure lists and mapped route lengths.
 - Saved routes stored on the current device, shareable route links and all-routes overview.
 - Accessible Day/Night themes, keyboard controls and responsive mobile layouts.
-- Optional, one-time display of your own location. No location is uploaded by this app.
+- Optional, one-time private display of your own location, separate from explicit public bus sharing.
 - Full timetable, CSV download, printing and a [no-JavaScript timetable](https://jakirhossaincde.github.io/ju_transport/timetable.html).
 - Campus weather and modelled US AQI from Open-Meteo/CAMS, with timestamps, error states and retry controls.
 - Offline access to routes and timetables after a successful first visit. Basemap tiles and refreshed weather still need a network connection.
@@ -24,11 +24,17 @@ The 7 route paths and all 21 departure times are preserved from repository commi
 
 Map polylines are indicative. Both directions use the original geometry; actual return roads may differ. Mapped distances are geometric lengths, not journey-time estimates.
 
-**Live bus tracking is not connected.** The previous page had placeholder Firebase credentials, duplicate map initialisation and several conflicting “login” functions. Those did not provide a deployable tracking service. The replacement does not claim users are authenticated or buses are being tracked. Adding fleet tracking requires an operator-controlled backend, driver authentication, restricted write rules, consent, timestamps and stale-location handling. Do not make a public writable database or collect driver phone/email details just to display a map.
+## Live bus location sharing
+
+The new live-tracking feature includes passenger GPS sharing, approved authority sign-in, student bus markers, source labels, GPS accuracy, update age, route/direction filtering and a persistent Stop button. Both Day and Night modes are supported.
+
+**Backend activation is pending:** `data/tracking-config.json` is deliberately disabled until a Supabase project is created and verified. The website shows an honest connection notice and never shows demonstration buses as live transport.
+
+See [the live-tracking guide](docs/LIVE_TRACKING.md) for passenger/student instructions, backend activation, authority account approval, privacy, data retention and testing. GitHub Pages hosts the frontend; authenticated Supabase database functions share current positions across devices. No private account information is included in the student feed.
 
 ## Local development
 
-No build tool or dependency installation is required. Serve this folder over HTTP:
+No build step or dependency installation is required to serve the app. Serve this folder over HTTP:
 
 ```sh
 python3 -m http.server 8000
@@ -51,6 +57,10 @@ Open http://localhost:8000. Direct `file://` opening cannot load the JSON data o
 | `sw.js`                | Same-origin app cache; never caches third-party tiles           |
 | `manifest.webmanifest` | Installation metadata for supported browsers                    |
 | `tests/`               | Regression checks for transport data and core behaviours        |
+
+## Tests
+
+Run `npm ci` followed by `npm test` for route, GPS-lifecycle and PostgreSQL authorization tests. For the two-browser sharing test, run `npx playwright install chromium`, then `npm run test:browser`. Development dependencies are not downloaded by site visitors.
 
 ## Updating routes and departures
 

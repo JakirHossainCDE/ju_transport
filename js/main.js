@@ -1,3 +1,4 @@
+import { initTracking } from "./live-tracking.js";
 import {
   TIME_ZONE,
   formatTime,
@@ -32,6 +33,7 @@ function remember(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {}
 }
+let tracker;
 let routes = [],
   map,
   tileLayer,
@@ -187,6 +189,7 @@ function renderRoutes() {
   $("#empty-routes").hidden = visible.length > 0;
 }
 function renderDetails() {
+  tracker?.refresh();
   const route = selectedRoute(),
     [from, to] = endpoints(route),
     times = timesFor(route);
@@ -621,6 +624,32 @@ async function loadApp() {
     );
     initMap();
     selectView(currentView);
+    initTracking({
+      map,
+      routes,
+      getSelection: () => ({ route: selectedId, direction }),
+      focusBus: (bus) => {
+        selectDirection(bus.direction);
+        selectRoute(bus.route_id);
+        selectView("map");
+        requestAnimationFrame(() => {
+          map?.setView([bus.latitude, bus.longitude], 15);
+          $(".map-card").scrollIntoView({
+            block: "center",
+            behavior: "smooth",
+          });
+        });
+      },
+      openDialog,
+      closeDialog,
+    })
+      .then((result) => {
+        tracker = result;
+      })
+      .catch(() => {
+        $("#live-connection").textContent =
+          "Live locations unavailable. Please reload to retry.";
+      });
     fetchWeather();
   } catch {
     $("#app-loading").hidden = true;
