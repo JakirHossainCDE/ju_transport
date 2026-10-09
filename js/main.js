@@ -1,4 +1,5 @@
 import { initTracking } from "./live-tracking.js";
+import { BASEMAPS, validBasemap, resolveBasemap } from "./basemaps.js";
 import {
   TIME_ZONE,
   formatTime,
@@ -45,6 +46,13 @@ let selectedId = "1",
   direction = "to-campus",
   currentView = "map",
   savedOnly = false;
+const requestedBasemap = new URLSearchParams(location.search).get("basemap"),
+  storedBasemap = readStored("ju-basemap", "auto");
+let basemapPreference = validBasemap(requestedBasemap)
+  ? requestedBasemap
+  : validBasemap(storedBasemap)
+    ? storedBasemap
+    : "auto";
 const stored = readStored("ju-saved-routes", []);
 const saved = new Set(
   Array.isArray(stored) ? stored.filter((id) => typeof id === "string") : [],
@@ -93,6 +101,7 @@ function setTheme(theme) {
   } catch {}
   $('meta[name="theme-color"]').content =
     theme === "dark" ? "#111e19" : "#174d40";
+  if (map && basemapPreference === "auto") updateBasemap();
 }
 setTheme(document.documentElement.dataset.theme || "light");
 $$("button[data-theme]").forEach((button) =>
@@ -254,14 +263,36 @@ function selectView(view, focus = false) {
   updateUrl();
 }
 function updateBasemap() {
-  if (tileLayer) map.removeLayer(tileLayer);
+  const id = resolveBasemap(
+      basemapPreference,
+      document.documentElement.dataset.theme,
+    ),
+    basemap = BASEMAPS[id];
+  $("#map").dataset.basemap = id;
+  $("#basemap-select").value = basemapPreference;
+  $("#basemap-description").textContent = basemap.description;
+  // Light and dark are styled street tiles; keep loaded tiles and map position.
+  if (tileLayer?.options.sourceUrl === basemap.url) return;
+  if (tileLayer) {
+    // Leaflet's remove handlers detach map/zoom listeners and attribution.
+    // Let them run before clearing this layer's remaining callbacks.
+    map.removeLayer(tileLayer);
+    tileLayer.off();
+  }
+  $("#tile-status").hidden = true;
+  $("#tile-status").textContent =
+    id === "satellite"
+      ? "Satellite imagery unavailable. Choose another basemap or try again later. Route paths are still shown."
+      : "Background map unavailable. Route paths are still shown.";
   let errors = 0,
     loaded = 0;
-  tileLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  tileLayer = L.tileLayer(basemap.url, {
+    attribution: basemap.attribution,
+    sourceUrl: basemap.url,
+    maxNativeZoom: basemap.maxNativeZoom,
     maxZoom: 19,
     className: "map-tiles",
+    keepBuffer: 1,
   });
   tileLayer.on("tileload", () => {
     loaded++;
@@ -273,11 +304,22 @@ function updateBasemap() {
   });
   tileLayer.addTo(map);
 }
+$("#basemap-select").addEventListener("change", (event) => {
+  if (!map || !validBasemap(event.target.value)) return;
+  basemapPreference = event.target.value;
+  remember("ju-basemap", basemapPreference);
+  const url = new URL(location.href);
+  if (basemapPreference === "auto") url.searchParams.delete("basemap");
+  else url.searchParams.set("basemap", basemapPreference);
+  history.replaceState(null, "", url);
+  updateBasemap();
+});
 function initMap() {
   if (!window.L) {
     $("#map-failure").hidden = false;
     $$(".map-toolbar button").forEach((b) => (b.disabled = true));
     $("#all-routes").disabled = true;
+    $("#basemap-select").disabled = true;
     return;
   }
   map = L.map("map", {

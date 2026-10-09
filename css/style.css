@@ -1016,6 +1016,40 @@ a:hover {
   font-size: 10px;
   padding: 6px 0;
 }
+.basemap-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 15px 0;
+}
+.basemap-bar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.basemap-bar select {
+  min-width: 0;
+  width: 185px;
+  max-width: 68%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+}
+.basemap-description {
+  margin: 0;
+  padding: 8px 15px 10px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--muted);
+}
 .map-stage {
   position: relative;
   height: 370px;
@@ -1052,17 +1086,12 @@ a:hover {
   height: 17px;
 }
 .map-label {
-  position: absolute;
-  bottom: 24px;
-  left: 15px;
-  z-index: 400;
-  padding: 7px 10px;
+  margin: 0;
+  padding: 10px 15px;
   background: var(--surface);
   color: var(--muted);
   font-size: 9px;
-  border-radius: 5px;
-  box-shadow: 0 1px 5px #19281c10;
-  max-width: calc(100% - 25px);
+  border-top: 1px solid var(--line);
 }
 .map-label .icon {
   width: 12px;
@@ -1072,9 +1101,9 @@ a:hover {
 .tile-status {
   position: absolute;
   z-index: 410;
-  left: 15px;
-  right: 15px;
-  bottom: 57px;
+  left: 63px;
+  right: 57px;
+  top: 14px;
   font-size: 11px;
   padding: 10px 12px;
   background: var(--notice);
@@ -1107,6 +1136,8 @@ a:hover {
   font-size: 9px !important;
   background: var(--surface) !important;
   color: var(--muted);
+  max-width: 100%;
+  line-height: 1.4;
 }
 .leaflet-control-attribution a {
   color: var(--green) !important;
@@ -1600,8 +1631,14 @@ dialog label {
 [data-theme="dark"] .map-stage {
   background: #22362d;
 }
-[data-theme="dark"] .map-tiles {
+#map[data-basemap="dark"] .map-tiles {
   filter: invert(0.9) hue-rotate(180deg) brightness(0.88) saturate(0.65);
+}
+#map[data-basemap="light"] .map-tiles {
+  filter: grayscale(1) brightness(1.06) contrast(0.9);
+}
+#map[data-basemap="satellite"] .map-tiles {
+  filter: none;
 }
 @media (min-width: 1550px) {
   .map-stage {

@@ -335,6 +335,30 @@
                   Show all routes
                 </button>
               </div>
+              <div class="basemap-bar">
+                <label for="basemap-select"
+                  ><svg class="icon" aria-hidden="true">
+                    <use href="#map-icon" /></svg
+                  >Basemap</label
+                >
+                <select
+                  id="basemap-select"
+                  aria-describedby="basemap-description"
+                >
+                  <option value="auto">Follow Day / Night</option>
+                  <option value="street">Street</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                  <option value="satellite">Satellite imagery</option>
+                </select>
+              </div>
+              <p
+                id="basemap-description"
+                class="basemap-description"
+                role="status"
+              >
+                Street map · roads and place names.
+              </p>
               <div class="map-stage">
                 <div
                   id="map"
@@ -364,11 +388,11 @@
                 <div id="tile-status" class="tile-status" role="status" hidden>
                   Background map unavailable. Route paths are still shown.
                 </div>
-                <span class="map-label"
-                  ><svg class="icon"><use href="#map-icon" /></svg>Indicative
-                  route paths · bus icons show shared GPS</span
-                >
               </div>
+              <p class="map-label">
+                <svg class="icon"><use href="#map-icon" /></svg>Indicative route
+                paths · bus icons show shared GPS
+              </p>
               <div
                 id="location-status"
                 class="location-status"
@@ -552,12 +576,19 @@
         password. Community reports are unverified. “Show my location” remains
         private to your browser and does not start sharing.
       </p>
+      <h3>Basemaps</h3>
+      <p>
+        Choose Street, Light, Dark or Satellite above the map. Street styles use
+        OpenStreetMap. Satellite uses EOX's 2025 Sentinel-2 composite at about
+        10 m detail; it is not live imagery and will look softer at close zoom.
+        Routes and shared bus positions remain on top of every basemap.
+      </p>
       <h3>Weather & saved routes</h3>
       <p>
         Weather and air quality are model estimates from Open-Meteo and CAMS for
-        the campus area. Saved routes and your theme choice stay in this
-        browser. After your first visit, the route guide can also work offline;
-        background maps and updated weather require a connection.
+        the campus area. Saved routes, basemap and your theme choice stay in
+        this browser. After your first visit, the route guide can also work
+        offline; background maps and updated weather require a connection.
       </p>
       <p class="dialog-note">
         Guide updated October 2026. This is a software update date, not

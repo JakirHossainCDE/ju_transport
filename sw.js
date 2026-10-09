@@ -1,4 +1,4 @@
-const CACHE = "ju-transport-v2026-10-08-guest-2";
+const CACHE = "ju-transport-v2026-10-09-basemaps-3";
 const FILES = [
   "./",
   "index.html",
@@ -7,6 +7,7 @@ const FILES = [
   "js/theme.js",
   "js/main.js",
   "js/core.js",
+  "js/basemaps.js",
   "js/live-tracking.js",
   "js/tracking-api.js",
   "js/tracking-core.js",

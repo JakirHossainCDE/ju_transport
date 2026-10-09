@@ -7,6 +7,7 @@ A responsive route and timetable guide for Jahangirnagar University, built by **
 ## What works
 
 - Seven interactive route maps with the original geographic paths preserved.
+- Street, Light, Dark and Satellite basemaps, with a saved preference and optional automatic Day/Night styling. Satellite uses the 2025 Sentinel-2 mosaic from EOX; routes and live bus markers stay visible.
 - Search by route number, English name, Bengali name or spelling alias.
 - Directions to and from campus, complete departure lists and mapped route lengths.
 - Saved routes stored on the current device, shareable route links and all-routes overview.
@@ -73,13 +74,14 @@ Run `npm ci` followed by `npm test` for route, GPS-lifecycle and PostgreSQL auth
 
 ## Links and themes
 
-A route can be opened directly with `?route=7&direction=from-campus`. Add `&view=timetable` for the full schedule or `&theme=night` / `&theme=day` for an explicit theme. Theme and saved routes persist locally; no account is required.
+A route can be opened directly with `?route=7&direction=from-campus`. Add `&view=timetable` for the full schedule, `&theme=night` / `&theme=day` for an explicit theme, or `&basemap=satellite` for imagery (`street`, `light`, `dark` and `auto` are also supported). Basemap, theme and saved routes persist locally; no account is required. An explicit basemap choice is independent of the page theme; Auto follows Day/Night.
 
 ## External services and attribution
 
 - Noto Sans Bengali is bundled locally for reliable Bengali text rendering, under the SIL Open Font License in `vendor/fonts/OFL.txt`.
 - [Leaflet 1.9.4](https://leafletjs.com/), BSD-2-Clause; licence retained under `vendor/leaflet/LICENSE`.
-- [OpenStreetMap](https://www.openstreetmap.org/copyright) standard tiles and contributors, visibly credited on the map. Uses the standard HTTPS endpoint and browser caching, without tile prefetching or offline tile downloads. The Night theme applies a CSS filter to the same tiles. Follow the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/) and use a suitable hosted provider if traffic grows.
+- [OpenStreetMap](https://www.openstreetmap.org/copyright) standard tiles and contributors, visibly credited on the map. Light and Dark apply display filters to the same street tiles. Uses the standard HTTPS endpoint and browser caching, without bulk prefetching or offline tile downloads. Follow the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/) and use a suitable hosted provider if traffic grows.
+- [EOX Maps](https://maps.eox.at/) / [EOxCloudless](https://cloudless.eox.at/) 2025 Sentinel-2 satellite mosaic, containing modified Copernicus Sentinel data 2025, under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) for this non-commercial student project. Attribution and licence links remain visible on the map. The [documented WMTS service](https://cloudless.eox.at/documentation/usage) supplies natural-colour imagery at about 10 m detail; it is not live, and zooms above 14 enlarge the same imagery. No satellite image filters are applied in Night mode. [Review the provider's licence](https://cloudless.eox.at/pricing) before commercial reuse. If tiles fail, the map offers a clear notice while retaining routes and basemap controls. External tiles are not saved by the service worker.
 - [Open-Meteo weather API](https://open-meteo.com/en/docs): temperature in °C, 10 m wind speed in km/h and today's maximum precipitation probability.
 - [Open-Meteo air-quality API](https://open-meteo.com/en/docs/air-quality-api) / CAMS: modelled US AQI for the campus area, not an on-site sensor. Weather results are cached locally for 15 minutes when both services succeed. These are public APIs subject to provider availability and terms; review those terms before a commercial or high-volume deployment.
 

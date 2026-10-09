@@ -75,6 +75,7 @@ const sqlNames = {
 };
 async function prepare(context) {
   await context.route("https://tile.openstreetmap.org/**", (r) => r.abort());
+  await context.route("https://tiles.maps.eox.at/**", (r) => r.abort());
   await context.route("https://*open-meteo.com/**", (r) => r.abort());
   await context.route("**/data/tracking-config.json", (r) =>
     r.fulfill({
@@ -143,7 +144,10 @@ async function prepare(context) {
 }
 async function pageFor(context) {
   const p = await context.newPage();
-  p.on("pageerror", (e) => report.errors.push(e.message));
+  p.on("pageerror", (e) => {
+    report.errors.push(e.stack || e.message);
+    console.error(e.stack || e.message);
+  });
   p.on("console", (m) => {
     if (m.type() === "error" && m.text().includes("supabase"))
       console.log(m.text());
@@ -202,8 +206,19 @@ try {
     /Community · unverified/,
   );
   assert.equal(await student.locator(".live-map-bus").count(), 1);
+  await student.locator("#basemap-select").selectOption("satellite");
+  assert.equal(
+    await student.locator("#map").getAttribute("data-basemap"),
+    "satellite",
+  );
+  assert.equal(await student.locator(".live-map-bus").count(), 1);
+  assert.match(
+    await student.locator(".leaflet-control-attribution").innerText(),
+    /Sentinel data 2025/,
+  );
+  await student.locator("#basemap-select").selectOption("auto");
   report.checks.push(
-    "A consenting passenger publishes GPS; an independent student sees a bus without signing in",
+    "A consenting passenger publishes GPS; a student sees the bus without signing in, including after switching basemaps",
   );
   await student.locator(".live-bus-row").click();
   await student.waitForSelector(".live-popup");
