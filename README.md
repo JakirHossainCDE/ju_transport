@@ -26,11 +26,11 @@ Map polylines are indicative. Both directions use the original geometry; actual 
 
 ## Live bus location sharing
 
-The new live-tracking feature includes passenger GPS sharing, approved authority sign-in, student bus markers, source labels, GPS accuracy, update age, route/direction filtering and a persistent Stop button. Both Day and Night modes are supported.
+The new live-tracking feature includes GPS sharing for any student or bus driver without a sign-in form, student bus markers, source labels, GPS accuracy, update age, route/direction filtering and a persistent Stop button. Both Day and Night modes are supported.
 
 **Backend activation is pending:** `data/tracking-config.json` is deliberately disabled until a Supabase project is created and verified. The website shows an honest connection notice and never shows demonstration buses as live transport.
 
-See [the live-tracking guide](docs/LIVE_TRACKING.md) for passenger/student instructions, backend activation, authority account approval, privacy, data retention and testing. GitHub Pages hosts the frontend; authenticated Supabase database functions share current positions across devices. No private account information is included in the student feed.
+See [the live-tracking guide](docs/LIVE_TRACKING.md) for passenger/student instructions, backend activation, privacy, data retention and testing. GitHub Pages hosts the frontend; authenticated Supabase database functions share current positions across devices. No private account information is included in the student feed.
 
 ## Local development
 

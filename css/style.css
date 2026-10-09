@@ -667,8 +667,7 @@ a:hover {
   border-radius: 13px;
 }
 .live-heading,
-.live-tools,
-.sharing-identity {
+.live-tools {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -865,7 +864,7 @@ a:hover {
   grid-template-columns: 1.2fr 1fr;
   gap: 14px;
 }
-.sharing-identity {
+.guest-sharing-note {
   margin-top: 16px;
   font-size: 12px;
   padding: 9px 12px;
@@ -898,16 +897,6 @@ a:hover {
   font-size: 13px;
   color: var(--ink);
   line-height: 1.6;
-}
-.authority-details {
-  margin-top: 22px;
-  border-top: 1px solid var(--line);
-  padding-top: 18px;
-}
-.authority-details summary {
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
 }
 .stop-button {
   background: #963f36;

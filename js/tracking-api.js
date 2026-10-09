@@ -60,25 +60,30 @@ export class TrackingAPI {
       const error = new Error(
         response.status === 429
           ? "Too many attempts. Please wait a few minutes and try again."
-          : data?.code === "P0002"
-            ? "This sharing session ended or was replaced on another device. Start again."
-            : path.includes("/auth/")
-              ? "Sign-in failed. Check your details, verification check, or contact the project owner."
-              : response.status === 401
-                ? "Your session expired. Sign in or start sharing again."
-                : "The live-location service could not complete this request. Please try again.",
+          : data?.error_code === "anonymous_provider_disabled"
+            ? "Guest sharing is not enabled yet. The project owner needs to finish setup. You do not need an account."
+            : data?.code === "P0002"
+              ? "This sharing session ended or was replaced on another device. Start again."
+              : path.includes("/auth/")
+                ? "Could not start guest sharing. Please try again or contact the project owner."
+                : response.status === 401
+                  ? "Your sharing session expired. Tap Start sharing again."
+                  : "The live-location service could not complete this request. Please try again.",
       );
       error.fatal =
         response.status === 401 ||
         response.status === 403 ||
         data?.code === "P0002";
+      error.status = response.status;
       throw error;
     }
     return data;
   }
   saveSession(data) {
     if (!data?.access_token || !data?.refresh_token)
-      throw new Error("Sign-in did not return a session.");
+      throw new Error(
+        "Could not create a guest sharing session. Please try again.",
+      );
     this.session = {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
@@ -86,7 +91,7 @@ export class TrackingAPI {
     };
   }
   async token() {
-    if (!this.session) throw new Error("Start sharing or sign in first.");
+    if (!this.session) throw new Error("Tap Start sharing to begin.");
     if (this.session.expiresAt - Date.now() < 90000) {
       if (!this.refreshing)
         this.refreshing = this.request(
@@ -94,6 +99,13 @@ export class TrackingAPI {
           { refresh_token: this.session.refreshToken },
         )
           .then((data) => this.saveSession(data))
+          .catch((error) => {
+            if (error.status === 400 || error.status === 401) {
+              this.session = null;
+              error.fatal = true;
+            }
+            throw error;
+          })
           .finally(() => {
             this.refreshing = null;
           });
@@ -103,8 +115,14 @@ export class TrackingAPI {
   }
   async ensureSession(captchaToken) {
     if (this.session) {
-      await this.token();
-      return;
+      try {
+        await this.token();
+        return;
+      } catch (error) {
+        // A rejected refresh ends the old guest session. Only an explicit
+        // Start creates a replacement; network errors keep the existing one.
+        if (this.session) throw error;
+      }
     }
     this.saveSession(
       await this.request(
@@ -115,27 +133,15 @@ export class TrackingAPI {
       ),
     );
   }
-  async login(email, password, captchaToken) {
-    const body = { email, password };
-    if (captchaToken)
-      body.gotrue_meta_security = { captcha_token: captchaToken };
-    this.saveSession(
-      await this.request("/auth/v1/token?grant_type=password", body),
-    );
-    return this.rpc("ju_share_identity", {});
-  }
-  async logout() {
-    const token = this.session?.accessToken;
-    this.session = null;
-    if (token)
-      await this.request("/auth/v1/logout?scope=local", {}, { token }).catch(
-        () => {},
-      );
-  }
   async rpc(name, body) {
-    return this.request(`/rest/v1/rpc/${name}`, body, {
-      token: await this.token(),
-    });
+    const token = await this.token();
+    try {
+      return await this.request(`/rest/v1/rpc/${name}`, body, { token });
+    } catch (error) {
+      if (error.status === 401 && this.session?.accessToken === token)
+        this.session = null;
+      throw error;
+    }
   }
   feed() {
     return this.request("/rest/v1/rpc/ju_live_buses");

@@ -1,4 +1,4 @@
-const CACHE = "ju-transport-v2026-10-08-live-1";
+const CACHE = "ju-transport-v2026-10-08-guest-2";
 const FILES = [
   "./",
   "index.html",

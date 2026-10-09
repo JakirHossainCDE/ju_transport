@@ -240,3 +240,119 @@ test("Public feed uses only the public API key; credentials are sent only to aut
   assert.equal(requests[0].headers.Authorization, undefined);
   assert.equal(requests[0].cache, "no-store");
 });
+
+test("Guest sharing creates a session automatically without email or password", async () => {
+  const calls = [];
+  const api = new TrackingAPI(
+    {
+      supabaseUrl: "https://example.supabase.co",
+      publishableKey: "sb_publishable_test",
+    },
+    async (url, options) => {
+      calls.push({ url, ...options });
+      return {
+        ok: true,
+        json: async () => ({
+          access_token: "guest-token",
+          refresh_token: "guest-refresh",
+          expires_in: 3600,
+        }),
+      };
+    },
+  );
+  await api.ensureSession();
+  await api.ensureSession();
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].url, /\/auth\/v1\/signup$/);
+  assert.deepEqual(JSON.parse(calls[0].body), {});
+  assert.equal(api.session.accessToken, "guest-token");
+  assert.equal(api.login, undefined);
+});
+
+test("Disabled guest sharing explains owner setup without requesting a sign-in", async () => {
+  const api = new TrackingAPI(
+    {
+      supabaseUrl: "https://example.supabase.co",
+      publishableKey: "sb_publishable_test",
+    },
+    async () => ({
+      ok: false,
+      status: 422,
+      json: async () => ({ error_code: "anonymous_provider_disabled" }),
+    }),
+  );
+  await assert.rejects(api.ensureSession(), /You do not need an account/);
+});
+
+test("Start replaces an expired guest session without credentials, but never retries a network failure as a signup", async () => {
+  const paths = [];
+  let refreshStatus = 503;
+  const api = new TrackingAPI(
+    {
+      supabaseUrl: "https://example.supabase.co",
+      publishableKey: "sb_publishable_test",
+    },
+    async (url, options) => {
+      paths.push(new URL(url).pathname);
+      if (url.includes("grant_type=refresh_token"))
+        return {
+          ok: false,
+          status: refreshStatus,
+          json: async () => ({}),
+        };
+      assert.deepEqual(JSON.parse(options.body), {});
+      return {
+        ok: true,
+        json: async () => ({
+          access_token: "new-guest",
+          refresh_token: "new-refresh",
+          expires_in: 3600,
+        }),
+      };
+    },
+  );
+  api.session = { accessToken: "old", refreshToken: "old", expiresAt: 0 };
+  await assert.rejects(api.ensureSession());
+  assert.equal(api.session.accessToken, "old");
+  assert.deepEqual(paths, ["/auth/v1/token"]);
+  refreshStatus = 400;
+  await api.ensureSession();
+  assert.equal(api.session.accessToken, "new-guest");
+  assert.deepEqual(paths, [
+    "/auth/v1/token",
+    "/auth/v1/token",
+    "/auth/v1/signup",
+  ]);
+});
+
+test("An invalid guest token stops sharing and the next Start can create a fresh session", async () => {
+  const paths = [];
+  const api = new TrackingAPI(
+    {
+      supabaseUrl: "https://example.supabase.co",
+      publishableKey: "sb_publishable_test",
+    },
+    async (url) => {
+      paths.push(new URL(url).pathname);
+      const signup = url.endsWith("/signup");
+      return {
+        ok: signup,
+        status: signup ? 200 : 401,
+        json: async () =>
+          signup
+            ? {
+                access_token: "new-guest",
+                refresh_token: "new-refresh",
+                expires_in: 3600,
+              }
+            : {},
+      };
+    },
+  );
+  api.saveSession({ access_token: "rejected", refresh_token: "old" });
+  await assert.rejects(api.start("test", {}), (error) => error.fatal === true);
+  assert.equal(api.session, null);
+  assert.deepEqual(paths, ["/rest/v1/rpc/ju_start_share"]);
+  await api.ensureSession();
+  assert.equal(api.session.accessToken, "new-guest");
+});

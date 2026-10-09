@@ -35,8 +35,7 @@ export async function initTracking({
   let wakeLock,
     captchaToken = "",
     captchaWidget,
-    captchaLoading = false,
-    role = "community";
+    captchaLoading = false;
   const markers = new Map(),
     layer = map && L.layerGroup().addTo(map);
   const routeName = (id) =>
@@ -167,8 +166,6 @@ export async function initTracking({
     $("#stop-sharing").hidden = !running;
     $("#sharing-strip").hidden = !running;
     document.body.classList.toggle("is-sharing", running);
-    $("#authority-details").hidden = busy || role === "authority";
-    $("#authority-signout").disabled = busy;
     if ($("#sharing-status").textContent !== message)
       $("#sharing-status").textContent = message;
     $("#sharing-status").dataset.state = state;
@@ -261,8 +258,10 @@ export async function initTracking({
       sharingState("error", "Complete the verification check below first.");
       return;
     }
-    const label = $("#tracking-label").value.trim();
-    if (!label || /[\x00-\x1f\x7f]/.test(label)) {
+    const label =
+      $("#tracking-label").value.trim() ||
+      `Route ${$("#tracking-route").value} bus`;
+    if (/[\x00-\x1f\x7f]/.test(label)) {
       sharingState("error", "Enter a bus number or short label.");
       return;
     }
@@ -281,53 +280,6 @@ export async function initTracking({
       $("#tracking-consent").checked = false;
       void sharer?.stop();
     });
-  $("#authority-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!api || sharer?.active || sharer?.starting) return;
-    if (config.turnstileSiteKey && !captchaToken) {
-      $("#authority-status").textContent =
-        "Complete the verification check below first.";
-      return;
-    }
-    $("#authority-login").disabled = true;
-    $("#start-sharing").disabled = true;
-    $("#authority-status").textContent = "Signing in…";
-    try {
-      role = await api.login(
-        $("#authority-email").value.trim(),
-        $("#authority-password").value,
-        captchaToken,
-      );
-      $("#sharing-identity").textContent =
-        role === "authority"
-          ? "Verified authority account"
-          : "Signed-in contributor · unverified";
-      $("#authority-signout").hidden = false;
-      $("#authority-details").hidden = role === "authority";
-      $("#authority-status").textContent =
-        role === "authority"
-          ? "Signed in. Select your bus and start sharing."
-          : "This account has not been approved as an authority. Shared locations will be labelled Community.";
-      $("#sharing-status").textContent =
-        "Signed in. Location sharing is still off until you select Start.";
-    } catch (error) {
-      $("#authority-status").textContent = error.message;
-    } finally {
-      $("#authority-password").value = "";
-      $("#authority-login").disabled = false;
-      $("#start-sharing").disabled = false;
-      resetCaptcha();
-    }
-  });
-  $("#authority-signout").addEventListener("click", async () => {
-    if (sharer?.active || sharer?.starting) return;
-    await api.logout();
-    role = "community";
-    $("#sharing-identity").textContent = "Community contributor · unverified";
-    $("#authority-signout").hidden = true;
-    $("#authority-details").hidden = false;
-    $("#authority-status").textContent = "Signed out.";
-  });
   sharingState("idle", "Location sharing is off.");
   let configurationError = false;
   try {
@@ -345,7 +297,6 @@ export async function initTracking({
   if (!api) {
     setConnection("disabled", "Live tracking is being connected");
     $("#tracking-unavailable").hidden = false;
-    $("#authority-login").disabled = true;
     render();
     if (configurationError) {
       setConnection("error", "Live service unavailable · reload to retry");

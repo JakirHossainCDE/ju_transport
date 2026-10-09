@@ -548,9 +548,9 @@
         GPS position, route, bus label and accuracy become public until you stop
         sharing or the location expires. Keep this page open; locked phones may
         pause updates. Only the latest point is displayed, with no journey
-        history. Community reports are unverified; authority badges require
-        account approval. “Show my location” remains private to your browser and
-        does not start sharing.
+        history. Students and bus drivers can share without entering an email or
+        password. Community reports are unverified. “Show my location” remains
+        private to your browser and does not start sharing.
       </p>
       <h3>Weather & saved routes</h3>
       <p>
@@ -622,29 +622,21 @@
         The live-location service is not connected yet. You can still explore
         the routes and timetable.
       </p>
-      <div class="sharing-identity">
-        <span id="sharing-identity">Community contributor · unverified</span
-        ><button
-          id="authority-signout"
-          type="button"
-          class="text-button"
-          hidden
-        >
-          Sign out
-        </button>
-      </div>
+      <p class="guest-sharing-note">
+        <strong>No sign-in needed.</strong> Any student or bus driver on board
+        can share.
+      </p>
       <form id="tracking-form">
         <fieldset id="tracking-fields">
           <legend class="sr-only">Bus journey and sharing consent</legend>
           <label for="tracking-label"
-            >Bus number or label <span>(no personal details)</span></label
+            >Bus number or label <span>(optional)</span></label
           >
           <input
             id="tracking-label"
             name="bus-label"
             maxlength="32"
             placeholder="e.g. JU Bus 12"
-            required
             autocomplete="off"
           />
           <div class="tracking-form-grid">
@@ -688,35 +680,8 @@
         or change apps. Sharing ends automatically after 4 hours. Stop before
         leaving the bus.
       </p>
-      <details id="authority-details" class="authority-details">
-        <summary>Transport authority sign-in</summary>
-        <p>
-          Approved accounts receive a “Verified authority” badge. Contact the
-          project owner for access.
-        </p>
-        <form id="authority-form">
-          <label for="authority-email">Email</label
-          ><input
-            id="authority-email"
-            type="email"
-            autocomplete="username"
-            required
-          />
-          <label for="authority-password">Password</label
-          ><input
-            id="authority-password"
-            type="password"
-            autocomplete="current-password"
-            required
-          />
-          <button id="authority-login" type="submit" class="button secondary">
-            Sign in
-          </button>
-        </form>
-        <p id="authority-status" role="status"></p>
-      </details>
       <div id="tracking-captcha" hidden>
-        <p>Complete this check before starting or signing in.</p>
+        <p>Complete this check to start sharing.</p>
         <div id="tracking-captcha-widget"></div>
       </div>
     </dialog>

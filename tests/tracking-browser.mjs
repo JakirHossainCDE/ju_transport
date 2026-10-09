@@ -10,21 +10,16 @@ import { PGlite } from "@electric-sql/pglite";
 const root = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const output = path.join(root, "test-results");
 await mkdir(output, { recursive: true });
-const db = new PGlite(),
-  authority = "00000000-0000-4000-8000-000000000001";
+const db = new PGlite();
 await db.exec(`create role anon;create role authenticated;create schema auth;
  create table auth.users(id uuid primary key);
- create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
- insert into auth.users values ('${authority}');`);
+ create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;`);
 await db.exec(
   await readFile(
     path.join(root, "supabase/migrations/20261008192000_live_bus_tracking.sql"),
     "utf8",
   ),
 );
-await db.query("insert into ju_private.authorities(user_id) values ($1)", [
-  authority,
-]);
 const types = {
   ".html": "text/html",
   ".css": "text/css",
@@ -68,7 +63,6 @@ let authCount = 0,
   feedFails = false;
 const sqlNames = {
   ju_live_buses: [],
-  ju_share_identity: [],
   ju_start_share: ["p_session_id", "p_route_id", "p_direction", "p_bus_label"],
   ju_publish_location: [
     "p_session_id",
@@ -107,19 +101,12 @@ async function prepare(context) {
     }
     try {
       if (url.pathname.startsWith("/auth/")) {
-        if (url.pathname.endsWith("/logout")) {
-          await route.fulfill({ json: {} });
-          return;
-        }
-        let user = authority;
-        if (url.pathname.endsWith("/signup")) {
-          user = crypto.randomUUID();
-          authCount++;
-          await db.query("insert into auth.users values ($1)", [user]);
-        } else if (body.password !== "qa-only-password") {
-          await route.fulfill({ status: 400, json: {} });
-          return;
-        }
+        assert.equal(body.email, undefined);
+        assert.equal(body.password, undefined);
+        assert.equal(url.pathname, "/auth/v1/signup");
+        const user = crypto.randomUUID();
+        authCount++;
+        await db.query("insert into auth.users values ($1)", [user]);
         await route.fulfill({
           json: { access_token: user, refresh_token: user, expires_in: 3600 },
         });
@@ -194,6 +181,14 @@ try {
   assert.equal(authCount, 0);
   assert.equal(await student.locator(".live-bus-row").count(), 0);
   await driver.locator("#open-tracking").click();
+  assert.equal(
+    await driver.locator('input[type="email"],input[type="password"]').count(),
+    0,
+  );
+  assert.match(
+    await driver.locator(".guest-sharing-note").textContent(),
+    /No sign-in needed/,
+  );
   await driver.locator("#tracking-label").fill("QA Bus 12");
   await driver.locator("#tracking-consent").check();
   await driver.locator("#start-sharing").click();
@@ -311,34 +306,35 @@ try {
     "Stop is available outside the dialog and removes the location for a second student session",
   );
   await driver.locator("#map-tab").click();
-  await driver.locator("#open-tracking").click();
-  await driver.locator("#authority-details summary").click();
-  await driver.locator("#authority-email").fill("qa@example.test");
-  await driver.locator("#authority-password").fill("qa-only-password");
-  await driver.locator("#authority-login").click();
-  await driver.waitForFunction(
-    () =>
-      document.querySelector("#sharing-identity").textContent ===
-      "Verified authority account",
-  );
-  assert.equal(await driver.locator("#sharing-strip").isVisible(), false);
-  await driver.locator("#tracking-consent").check();
-  await driver.locator("#start-sharing").click();
-  // Emit a new GPS measurement for the second trip. Browser emulation otherwise
-  // retains the timestamp from the first trip, which the app correctly rejects.
-  await sender.setGeolocation({
+  // The student becomes a sharer using the same form, with no bus label or credentials.
+  await viewer.grantPermissions(["geolocation"]);
+  await viewer.setGeolocation({
     latitude: 23.8601,
     longitude: 90.3201,
     accuracy: 8,
   });
-  await driver.waitForSelector('#sharing-status[data-state="sharing"]');
-  await waitBus(student);
+  await student.locator("#open-tracking").click();
+  assert.equal(
+    await student.locator('input[type="email"],input[type="password"]').count(),
+    0,
+  );
+  await student.locator("#tracking-direction").selectOption("to-campus");
+  await student.locator("#tracking-consent").check();
+  await student.locator("#start-sharing").click();
+  await student.waitForSelector('#sharing-status[data-state="sharing"]');
+  await student.locator("#close-tracking").click();
+  await waitBus(driver);
+  assert.equal(authCount, 2);
   assert.match(
-    await student.locator(".live-bus-row").textContent(),
-    /Verified authority/,
+    await driver.locator(".live-bus-row").textContent(),
+    /Route 1 bus/,
+  );
+  assert.match(
+    await driver.locator(".live-bus-row").textContent(),
+    /Community/,
   );
   report.checks.push(
-    "Only the server-approved account receives the authority badge; sign-in alone does not start GPS",
+    "A student can share without a bus label, email or password; the second device sees the default route label",
   );
   feedFails = true;
   await student.waitForSelector('#live-connection[data-state="error"]', {
@@ -361,14 +357,19 @@ try {
   report.checks.push(
     "A lost GPS signal expires on the server and disappears from the student view",
   );
-  await driver.locator("#stop-sharing").click();
-  await driver.waitForSelector('#sharing-status[data-state="idle"]');
-  await driver.locator("#authority-signout").click();
-  await driver.reload();
-  await driver.waitForSelector('#live-connection[data-state="ready"]');
-  assert.equal(await driver.locator("#sharing-strip").isVisible(), false);
+  await student.locator("#quick-stop-sharing").click();
+  await student.waitForFunction(
+    () => document.querySelector("#sharing-status").dataset.state === "idle",
+  );
+  await student.reload();
+  await student.waitForSelector('#live-connection[data-state="ready"]');
+  assert.equal(await student.locator("#sharing-strip").isVisible(), false);
+  assert.equal(
+    await student.locator('input[type="email"],input[type="password"]').count(),
+    0,
+  );
   report.checks.push(
-    "Reload does not restart location sharing or retain authority credentials",
+    "Reload never restarts GPS or asks for account credentials",
   );
   assert.deepEqual(report.errors, []);
   assert.deepEqual(report.violations, []);
