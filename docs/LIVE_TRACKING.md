@@ -1,6 +1,10 @@
 # Live bus location sharing
 
-The frontend and database implementation are included. **Activation still requires a Supabase project and its public configuration.** Until `data/tracking-config.json` is enabled, the site explains that live tracking is being connected; it never displays simulated buses.
+The frontend is connected to the dedicated Supabase Free-plan project `ju-transport` in **Singapore** (`ap-southeast-1`, project reference `ltzfvxqizpefwshimtpu`). The database functions and per-minute expired-location cleanup are installed. Only the public project URL and publishable key are included in `data/tracking-config.json`.
+
+**One owner setting remains:** open [Authentication → Sign In / Providers](https://supabase.com/dashboard/project/ltzfvxqizpefwshimtpu/auth/providers), enable **Allow anonymous sign-ins**, and save. The connected management tools cannot change this Auth setting. Until it is enabled, viewing the feed works, but Start sharing explains that guest sharing needs owner activation. No redeployment is needed after changing the setting.
+
+The website never shows simulated buses as live transport. An empty feed means nobody is currently sharing a recent location.
 
 ## Passenger or bus operator
 
@@ -20,10 +24,10 @@ Each bus shows its source, latest GPS update age and accuracy. Community positio
 
 Updates upload at most once every 12 seconds and student views refresh every 10 seconds while visible. This is polling, not a continuous video-like feed. Network delay and GPS availability affect how soon a position appears. At 45 seconds without a new fix it is labelled **Last seen**; at 120 seconds it disappears. A failed read clears unconfirmed markers until reconnection. No live data is cached for offline viewing.
 
-## Activate the backend
+## Re-create the backend for another deployment
 
-1. Select the intended Supabase organization, review the project cost, and create a project named `ju-transport` in a suitable region (Mumbai is close to the service area).
-2. Apply `supabase/migrations/20261008192000_live_bus_tracking.sql` to the new project's database as its owner. It creates only the `ju_private` schema and five `ju_*` public RPC wrappers. Keep `ju_private` **out of the Data API's exposed schemas**.
+1. Select the intended Supabase organization, review the project cost, and create a project named `ju-transport`. This deployment uses the **Free plan and Singapore**, as selected by the owner. Supabase's server location is separate from the Dhaka–Savar map and service area.
+2. Apply the SQL files in `supabase/migrations/` in filename order to the new project's database as its owner. The first creates the `ju_private` schema and five `ju_*` public RPC wrappers; the second enables Cron and schedules expired-location cleanup. Keep `ju_private` **out of the Data API's exposed schemas**. Do not re-run the initial schema migration on the already configured project.
 3. Enable **anonymous sign-ins** in Supabase Authentication. This is a one-time site-owner setting; students and drivers do not sign into Supabase. Set the site's URL to `https://jakirhossaincde.github.io/ju_transport/`.
 4. For public anonymous sharing, configure Cloudflare Turnstile in Supabase Auth and add its **public site key** below. Keep the CAPTCHA secret in Supabase's Auth settings. The browser supports a verification check for guest sharing without an account. Retain Supabase Auth's signup rate limits and monitor usage.
 5. Copy the project's URL and **publishable** key into `data/tracking-config.json`:
@@ -39,7 +43,7 @@ Updates upload at most once every 12 seconds and student views refresh every 10 
 
    If CAPTCHA is not enabled in Supabase, leave `turnstileSiteKey` empty. Do not enable server-side CAPTCHA without configuring the browser's matching site key. **Never put a service-role key, secret key, database password or Supabase access token in this repository.** The public key is deliberately browser-visible; database authorization protects writes.
 
-6. Enable Supabase Cron and run the cleanup statement below. Run the security/performance advisors and inspect the results. Private tables have RLS enabled and deliberately have no public row policies: all access goes through the restricted functions.
+6. Confirm the Cron job below is active, then run the security/performance advisors. Private tables have RLS enabled and deliberately have no public row policies: all access goes through the restricted functions. The [RLS-enabled/no-policy informational notice](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) is expected for these closed tables. A new project may also report an [unused index](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) before receiving traffic.
 7. Commit the config to `main`, wait for GitHub Pages to deploy, and reload the website. Verify one real phone publishing and a second device viewing, then Stop. Check network errors and denied location permission too. Never leave test coordinates in production.
 
 ### Data retention
@@ -56,7 +60,7 @@ select cron.schedule(
 );
 ```
 
-Run this once after enabling the `pg_cron` extension. A phone paused for more than two minutes will need to start a new session after cleanup. Supabase database backups and Auth records follow the project's retention settings. Anonymous Auth accounts are not automatically deleted by this app; monitor and maintain them in a dedicated project. Do not indiscriminately delete users from a project shared with other applications.
+The cleanup migration already installs this job for the Singapore project. A phone paused for more than two minutes will need to start a new session after cleanup. Supabase database backups and Auth records follow the project's retention settings. Anonymous Auth accounts are not automatically deleted by this app; monitor and maintain them in a dedicated project. Do not indiscriminately delete users from a project shared with other applications.
 
 ## Access model
 

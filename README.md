@@ -29,7 +29,7 @@ Map polylines are indicative. Both directions use the original geometry; actual 
 
 The new live-tracking feature includes GPS sharing for any student or bus driver without a sign-in form, student bus markers, source labels, GPS accuracy, update age, route/direction filtering and a persistent Stop button. Both Day and Night modes are supported.
 
-**Backend activation is pending:** `data/tracking-config.json` is deliberately disabled until a Supabase project is created and verified. The website shows an honest connection notice and never shows demonstration buses as live transport.
+**Backend connected:** the dedicated Supabase Free-plan project `ju-transport` is hosted in Singapore (`ap-southeast-1`). The public location feed, protected sharing functions and automatic expired-location cleanup are installed. **The owner must enable Anonymous sign-ins in [Supabase Authentication](https://supabase.com/dashboard/project/ltzfvxqizpefwshimtpu/auth/providers) before anyone can start sharing.** Students and drivers do not need an email, password or registration. The map continues to cover Dhaka–Savar; the server region does not change the service area.
 
 See [the live-tracking guide](docs/LIVE_TRACKING.md) for passenger/student instructions, backend activation, privacy, data retention and testing. GitHub Pages hosts the frontend; authenticated Supabase database functions share current positions across devices. No private account information is included in the student feed.
 
